@@ -10,11 +10,16 @@ POSTS_QUANTITY = 10
 User = get_user_model()
 
 
-def index(request):
-    post_list = Post.objects.all()
-    paginator = Paginator(post_list, POSTS_QUANTITY)
+def include_paginator(request, db_object):
+    paginator = Paginator(db_object, POSTS_QUANTITY)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    return page_obj
+
+
+def index(request):
+    post_list = Post.objects.all()
+    page_obj = include_paginator(request, post_list)
     context = {
         'page_obj': page_obj,
     }
@@ -25,9 +30,7 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     post_list = group.groups.all()
-    paginator = Paginator(post_list, POSTS_QUANTITY)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = include_paginator(request, post_list)
     context = {
         'group': group,
         'page_obj': page_obj,
@@ -38,15 +41,13 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
+    count_posts = author.posts.all().count()
+    post_list = author.posts.all()
+    page_obj = include_paginator(request, post_list)
+    following = False
     if request.user.is_authenticated:
         following = Follow.objects.filter(
-        user=request.user, author=author).exists()
-    following = False
-    count_posts = author.posts.all().count()
-    posts = author.posts.all()
-    paginator = Paginator(posts, POSTS_QUANTITY)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+            user=request.user, author=author).exists()
 
     context = {
         'author_username': author,
@@ -131,9 +132,7 @@ def follow_index(request):
     post_list = Post.objects.filter(
         author__following__user=request.user
     )
-    paginator = Paginator(post_list, POSTS_QUANTITY)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = include_paginator(request, post_list)
     context = {
         'page_obj': page_obj,
     }
@@ -147,7 +146,7 @@ def profile_follow(request, username):
         return redirect('posts:profile', username=username)
     author = get_object_or_404(User, username=username)
     if Follow.objects.filter(
-        user=request.user, author=author).exists():
+            user=request.user, author=author).exists():
         return redirect('posts:profile', username=username)
     Follow.objects.create(
         user=request.user,

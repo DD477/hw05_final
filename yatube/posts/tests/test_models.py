@@ -33,3 +33,5 @@ class PostModelTest(TestCase):
         expected_object_name = tw.shorten(
             self.post.text, 15, placeholder='...')
         self.assertEqual(str(self.post), expected_object_name)
+
+#добавить проверку моделей Comment, Follow

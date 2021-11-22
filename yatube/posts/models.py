@@ -27,7 +27,7 @@ class Post(CreatedModel):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='posts'
+        related_name='posts',
 
     )
     group = models.ForeignKey(
@@ -37,12 +37,12 @@ class Post(CreatedModel):
         blank=True,
         null=True,
         verbose_name='Группа',
-        help_text='Выберите группу'
+        help_text='Выберите группу',
     )
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
     )
 
     class Meta:
@@ -55,18 +55,18 @@ class Post(CreatedModel):
 class Comment(CreatedModel):
     post = models.ForeignKey(
         Post,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         blank=True,
         null=True,
         verbose_name='Пост',
-        related_name='comments'
+        related_name='comments',
 
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='comments'
+        related_name='comments',
     )
 
     def __str__(self):
@@ -78,12 +78,12 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Подписчик',
-        related_name='follower'
+        related_name='follower',
 
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='following'
+        related_name='following',
     )

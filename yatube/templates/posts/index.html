@@ -3,7 +3,7 @@
 {% block title %} Последние обновления на сайте {% endblock  %}
 {% block content %}
 {% include 'posts/includes/switcher.html'%}
-{% cache 20 index_page %}
+{% cache 20 index_page request.GET %}
   {% for post in page_obj %}
   {% include 'posts/includes/content.html' %}
     {% if post.group.slug %}

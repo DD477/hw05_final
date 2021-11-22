@@ -1,3 +1,4 @@
+from os import fpathconf
 import shutil
 import tempfile
 
@@ -9,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from posts.models import Comment, Group, Post
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -36,10 +37,15 @@ class PostPagesTests(TestCase):
         )
         cls.user = User.objects.create_user(username='TestUser')
         cls.another_user = User.objects.create_user(username='AnotherTestUser')
+        cls.follower = User.objects.create_user(username='Follower')
         cls.gpoup = Group.objects.create(
             title='Test group',
             slug='test-slug',
             description='Test description',
+        )
+        cls.follow_record = Follow.objects.create(
+            author_id=cls.another_user.id,
+            user_id=cls.follower.id,
         )
         cls.another_group = Group.objects.create(
             title='Another group',
@@ -60,7 +66,7 @@ class PostPagesTests(TestCase):
         )
         cls.another_post = Post.objects.create(
             author=cls.another_user,
-            text='Test text',
+            text='Another test text',
             group=cls.another_group,
             image=uploaded,
         )
@@ -76,8 +82,13 @@ class PostPagesTests(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
+        self.guests_client = Client()
+
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+
+        self.authorized_follower = Client()
+        self.authorized_follower.force_login(self.follower)
 
     def test_pages_uses_correct_template(self):
         """View-функции используют правильные html-шаблоны."""
@@ -191,12 +202,44 @@ class PostPagesTests(TestCase):
                                      get(reverse('posts:index')).content)
         self.assertNotEqual(content, content_after_clear_cache)
 
+    def test_user_follow(self):
+        """Авторизованный пользователь может подписываться на других пользователей."""
+        response = self.authorized_follower.get(
+            reverse('posts:profile_follow', args=[self.user.username]))
+        count_follow = Follow.objects.count()
+        self.assertEqual(count_follow, 2)
+        self.assertTrue(
+            Follow.objects.filter(
+                author_id=self.user.id,
+                user_id=self.follower.id,
+            ).exists()
+        )
+        self.assertRedirects(response, reverse(
+            'posts:profile', args=[self.user.username]))
+
+    def test_user_unfollow(self):
+        """Авторизованный пользователь может отписаться от других пользователей."""
+        response = self.authorized_follower.get(
+            reverse('posts:profile_unfollow', args=[self.another_user.username]))
+        count_follow = Follow.objects.count()
+        self.assertEqual(count_follow, 0)
+        self.assertRedirects(response, reverse(
+            'posts:profile', args=[self.another_user.username]))
+
+    def test_follower_see_post(self):
+        response = self.authorized_follower.get(reverse('posts:follow_index'))
+        self.assertEqual(self.another_post, response.context['page_obj'][0])
+
+    def test_follower_dont_see_not_following_post(self):
+        response = self.authorized_follower.get(reverse('posts:follow_index'))
+        self.assertNotEqual(self.post, response.context['page_obj'][0])
+
 
 class PaginatorViewsTest(PostPagesTests):
     def test_first_page_contains_ten_records(self):
         pages = [
-            # reverse('posts:index'),
-            # reverse('posts:group_list', args=[self.gpoup.slug]),
+            reverse('posts:index'),
+            reverse('posts:group_list', args=[self.gpoup.slug]),
             reverse('posts:profile', args=[self.user.username]),
         ]
         for page in pages:
