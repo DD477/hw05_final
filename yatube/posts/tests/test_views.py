@@ -203,7 +203,8 @@ class PostPagesTests(TestCase):
         self.assertNotEqual(content, content_after_clear_cache)
 
     def test_user_follow(self):
-        """Авторизованный пользователь может подписываться на других пользователей."""
+        """Авторизованный пользователь может подписываться 
+        на других пользователей."""
         count_follow = Follow.objects.count()
         response = self.authorized_follower.get(
             reverse('posts:profile_follow', args=[self.user.username]))
@@ -218,10 +219,12 @@ class PostPagesTests(TestCase):
             'posts:profile', args=[self.user.username]))
 
     def test_user_unfollow(self):
-        """Авторизованный пользователь может отписаться от других пользователей."""
+        """Авторизованный пользователь может отписаться 
+        от других пользователей."""
         count_follow = Follow.objects.count()
         response = self.authorized_follower.get(
-            reverse('posts:profile_unfollow', args=[self.another_user.username]))
+            reverse('posts:profile_unfollow',
+                    args=[self.another_user.username]))
         self.assertEqual(Follow.objects.count(), count_follow - 1)
         self.assertRedirects(response, reverse(
             'posts:profile', args=[self.another_user.username]))
