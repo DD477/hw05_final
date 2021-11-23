@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-from os import fpathconf
 
 from django import forms
 from django.conf import settings
@@ -203,7 +202,7 @@ class PostPagesTests(TestCase):
         self.assertNotEqual(content, content_after_clear_cache)
 
     def test_user_follow(self):
-        """Авторизованный пользователь может подписываться 
+        """Авторизованный пользователь может подписываться
         на других пользователей."""
         count_follow = Follow.objects.count()
         response = self.authorized_follower.get(
@@ -219,7 +218,7 @@ class PostPagesTests(TestCase):
             'posts:profile', args=[self.user.username]))
 
     def test_user_unfollow(self):
-        """Авторизованный пользователь может отписаться 
+        """Авторизованный пользователь может отписаться
         от других пользователей."""
         count_follow = Follow.objects.count()
         response = self.authorized_follower.get(
