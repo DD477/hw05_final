@@ -27,6 +27,7 @@ class GroupAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     empty_value_display = '-пусто-'
 
+
 class FollowAdmin(admin.ModelAdmin):
     list_display = (
         'user',
@@ -34,6 +35,7 @@ class FollowAdmin(admin.ModelAdmin):
     )
     list_filter = ('user',)
     empty_value_display = '-пусто-'
+
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group, GroupAdmin)

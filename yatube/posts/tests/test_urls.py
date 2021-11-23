@@ -86,8 +86,7 @@ class PostsURLTests(TestCase):
         response = self.authorized_client.get('/unexisting_page/')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         self.assertTemplateUsed(
-                    response, 'core/404.html')
-
+            response, 'core/404.html')
 
     def test_urls_not_access_for_guest_user(self):
         """Страницы недоступны неавторизованному пользователю."""

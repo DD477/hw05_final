@@ -113,5 +113,3 @@ class PostCreateFormTests(TestCase):
                 text=form_data['text'],
             ).exists()
         )
-
-# добавить проверку редиректа у неавторизованного пользователя

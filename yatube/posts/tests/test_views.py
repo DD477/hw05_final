@@ -1,6 +1,6 @@
-from os import fpathconf
 import shutil
 import tempfile
+from os import fpathconf
 
 from django import forms
 from django.conf import settings
@@ -44,8 +44,8 @@ class PostPagesTests(TestCase):
             description='Test description',
         )
         cls.follow_record = Follow.objects.create(
-            author_id=cls.another_user.id,
-            user_id=cls.follower.id,
+            author=cls.another_user,
+            user=cls.follower,
         )
         cls.another_group = Group.objects.create(
             title='Another group',
@@ -71,8 +71,8 @@ class PostPagesTests(TestCase):
             image=uploaded,
         )
         cls.comments = Comment.objects.create(
-            post_id=cls.post.id,
-            author_id=cls.user.id,
+            post=cls.post,
+            author=cls.user,
             text='Comment text'
         )
 
@@ -204,10 +204,10 @@ class PostPagesTests(TestCase):
 
     def test_user_follow(self):
         """Авторизованный пользователь может подписываться на других пользователей."""
+        count_follow = Follow.objects.count()
         response = self.authorized_follower.get(
             reverse('posts:profile_follow', args=[self.user.username]))
-        count_follow = Follow.objects.count()
-        self.assertEqual(count_follow, 2)
+        self.assertEqual(Follow.objects.count(), count_follow + 1)
         self.assertTrue(
             Follow.objects.filter(
                 author_id=self.user.id,
@@ -219,18 +219,18 @@ class PostPagesTests(TestCase):
 
     def test_user_unfollow(self):
         """Авторизованный пользователь может отписаться от других пользователей."""
+        count_follow = Follow.objects.count()
         response = self.authorized_follower.get(
             reverse('posts:profile_unfollow', args=[self.another_user.username]))
-        count_follow = Follow.objects.count()
-        self.assertEqual(count_follow, 0)
+        self.assertEqual(Follow.objects.count(), count_follow - 1)
         self.assertRedirects(response, reverse(
             'posts:profile', args=[self.another_user.username]))
 
-    def test_follower_see_post(self):
+    def test_follower_sees_subscribed_post(self):
         response = self.authorized_follower.get(reverse('posts:follow_index'))
         self.assertEqual(self.another_post, response.context['page_obj'][0])
 
-    def test_follower_dont_see_not_following_post(self):
+    def test_follower_dont_sees_not_subscribed_post(self):
         response = self.authorized_follower.get(reverse('posts:follow_index'))
         self.assertNotEqual(self.post, response.context['page_obj'][0])
 
