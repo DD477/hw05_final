@@ -17,3 +17,9 @@
 {% endthumbnail %}
 <p>{{ post.text|linebreaksbr }}</p>
 <a href="{% url 'posts:post_detail' post.id %}">подробная информация </a> <br>
+{% with request.resolver_match.view_name as view_name %}
+{% if post.group.slug and view_name != 'posts:group_list' %}
+<a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
+{% endif %}
+{% endwith %}
+{% if not forloop.last %} <hr> {% endif %}

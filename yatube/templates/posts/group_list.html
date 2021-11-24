@@ -3,11 +3,11 @@
 Записи сообщества {{ group.title }}
 {% endblock %}
 {% block content %}
+
   <h1>{{ group.title }}</h1>
   <p>{{ group.description }}</p>
-   {% for post in page_obj %}
+  {% for post in page_obj %}
      {% include 'posts/includes/content.html' %}
-        {% if not forloop.last %}<hr>{% endif %}
-    {% endfor %}
+  {% endfor %}
   {% include 'posts/includes/paginator.html'%}
 {% endblock %}
