@@ -88,9 +88,10 @@ class Follow(models.Model):
         related_name='following',
     )
 
-#Не понял как проверить тут подписку на самого себя
+# Не понял как проверить тут подписку на самого себя
     class Meta:
         unique_together = ('user', 'author')
 
     def __str__(self):
-        return f'Пользователь {self.user} подписан на пользователя {self.author}'
+        return (f'Пользователь {self.user} подписан '
+        f'на пользователя {self.author}')

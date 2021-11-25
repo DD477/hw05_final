@@ -36,6 +36,7 @@ class FollowAdmin(admin.ModelAdmin):
     list_filter = ('user',)
     empty_value_display = '-пусто-'
 
+
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
         'author',
