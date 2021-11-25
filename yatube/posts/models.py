@@ -94,4 +94,4 @@ class Follow(models.Model):
 
     def __str__(self):
         return (f'Пользователь {self.user} подписан '
-        f'на пользователя {self.author}')
+                f'на пользователя {self.author}')
