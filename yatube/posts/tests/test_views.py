@@ -1,3 +1,5 @@
+# Выделение общего предка для тестов буду делать,
+# но пока хочу добить основные проблемы
 import shutil
 import tempfile
 
@@ -193,9 +195,9 @@ class PostPagesTests(TestCase):
     def test_index_page_after_clear_cache(self):
         """Проверка обновления списка постов на главной странице
         после очистки кэша."""
+        Post.objects.filter(id=self.post.id).delete()
         content = (self.authorized_client.
                    get(reverse('posts:index')).content)
-        Post.objects.filter(id=self.post.id).delete()
         cache.clear()
         content_after_clear_cache = (self.authorized_client.
                                      get(reverse('posts:index')).content)
@@ -204,14 +206,18 @@ class PostPagesTests(TestCase):
     def test_user_follow(self):
         """Авторизованный пользователь может подписываться
         на других пользователей."""
-        count_follow = Follow.objects.count()
+        self.assertFalse(
+            Follow.objects.filter(
+                author=self.user,
+                user=self.follower,
+            ).exists()
+        )
         response = self.authorized_follower.get(
             reverse('posts:profile_follow', args=[self.user.username]))
-        self.assertEqual(Follow.objects.count(), count_follow + 1)
         self.assertTrue(
             Follow.objects.filter(
-                author_id=self.user.id,
-                user_id=self.follower.id,
+                author=self.user,
+                user=self.follower,
             ).exists()
         )
         self.assertRedirects(response, reverse(
@@ -220,21 +226,31 @@ class PostPagesTests(TestCase):
     def test_user_unfollow(self):
         """Авторизованный пользователь может отписаться
         от других пользователей."""
-        count_follow = Follow.objects.count()
+        self.assertTrue(
+            Follow.objects.filter(
+                author=self.another_user,
+                user=self.follower,
+            ).exists()
+        )
         response = self.authorized_follower.get(
             reverse('posts:profile_unfollow',
                     args=[self.another_user.username]))
-        self.assertEqual(Follow.objects.count(), count_follow - 1)
+        self.assertFalse(
+            Follow.objects.filter(
+                author=self.user,
+                user=self.follower,
+            ).exists()
+        )
         self.assertRedirects(response, reverse(
             'posts:profile', args=[self.another_user.username]))
 
     def test_follower_sees_subscribed_post(self):
         response = self.authorized_follower.get(reverse('posts:follow_index'))
-        self.assertEqual(self.another_post, response.context['page_obj'][0])
+        self.assertIn(self.another_post, response.context['page_obj'])
 
     def test_follower_dont_sees_not_subscribed_post(self):
         response = self.authorized_follower.get(reverse('posts:follow_index'))
-        self.assertNotEqual(self.post, response.context['page_obj'][0])
+        self.assertNotEqual(self.post, response.context['page_obj'])
 
 
 class PaginatorViewsTest(PostPagesTests):
