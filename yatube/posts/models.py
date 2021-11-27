@@ -3,6 +3,7 @@ import textwrap as tw
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import F, Q
 
 from core.models import CreatedModel
 
@@ -88,9 +89,15 @@ class Follow(models.Model):
         related_name='following',
     )
 
-# Не понял как проверить тут подписку на самого себя
     class Meta:
-        unique_together = ('user', 'author')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'], name='unique_follow'
+            ),
+
+            models.CheckConstraint(check=~Q(
+                user=F('author')), name='user_not_author')
+        ]
 
     def __str__(self):
         return (f'Пользователь {self.user} подписан '
