@@ -8,6 +8,7 @@ SECRET_KEY = 'mq$pfoepspl$5!c!n6s206(dvgoyx5uddgm4=-875v=fh4gko+'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '51.250.15.231',
     'localhost',
     '127.0.0.1',
     '[::1]',
